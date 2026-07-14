@@ -1,3 +1,6 @@
 *.lnk
 .DS_Store
 Thumbs.db
+backend/node_modules/
+backend/invistatop.db
+backend/.env
