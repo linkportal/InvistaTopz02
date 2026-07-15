@@ -16,9 +16,14 @@ app.use('/api/properties', require('./routes/properties'));
 app.use('/api/investments', require('./routes/investments'));
 app.use('/api/dividends', require('./routes/dividends'));
 app.use('/api/transactions', require('./routes/transactions'));
+app.use('/api/admin', require('./routes/admin'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'admin.html'));
 });
 
 app.get('*', (req, res) => {

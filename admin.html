@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InvistaTop Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--sidebar:#161822;--card:#1c1e2e;--border:#2a2d3e;--gold:#e8c47a;--gold2:#d4a84b;--white:#f0f2f5;--gray:#8a92a6;--gray2:#5a6178;--green:#3fb950;--red:#f85149;--blue:#58a6ff;--purple:#bc8cff;--radius:12px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+.login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(circle at 30% 40%,rgba(232,196,122,.08),transparent 50%),var(--bg)}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:380px;max-width:90%}
+.login-box h1{font-size:24px;margin-bottom:4px}
+.login-box .sub{color:var(--gray);font-size:14px;margin-bottom:28px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:12px;color:var(--gray);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--white);font-size:14px;outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.error{color:var(--red);font-size:12px;margin-top:4px;min-height:16px}
+.btn{padding:10px 20px;border-radius:8px;font-weight:600;font-size:13px;border:none;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0f1117;width:100%;padding:12px;font-size:14px}
+.btn-gold:hover{box-shadow:0 4px 20px rgba(232,196,122,.3)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-green{background:var(--green);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--gray)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-blue{background:var(--blue);color:#0f1117}
+.btn-purple{background:var(--purple);color:#0f1117}
+.layout{display:none;min-height:100vh}
+.layout.show{display:flex}
+.sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);padding:20px 0;position:fixed;top:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 20px 24px;font-size:18px;font-weight:800;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar .logo span{color:var(--gold)}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--gray);font-size:13px;font-weight:500;transition:.2s;text-decoration:none}
+.sidebar nav a:hover,.sidebar nav a.active{color:var(--gold);background:rgba(232,196,122,.06)}
+.sidebar nav a .icon{width:20px;text-align:center}
+.sidebar .logout{position:absolute;bottom:0;left:0;right:0;padding:14px 20px;border-top:1px solid var(--border);color:var(--red);font-size:13px;font-weight:500;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:inherit}
+.sidebar .logout:hover{background:rgba(248,81,73,.06)}
+.sidebar .section-label{padding:16px 20px 6px;font-size:10px;color:var(--gray2);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.main{margin-left:240px;flex:1;padding:24px 30px}
+.page{display:none}.page.active{display:block}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-header h2{font-size:22px;font-weight:700}
+.page-header .actions{display:flex;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-card .label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-card .value{font-size:26px;font-weight:800;color:var(--gold)}
+.stat-card .sub{font-size:12px;color:var(--gray2);margin-top:4px}
+.stat-card .icon-big{float:right;font-size:28px;opacity:.3;margin-top:-4px}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-wrap table{width:100%;border-collapse:collapse}
+.table-wrap th{text-align:left;padding:12px 16px;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
+.table-wrap td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border)}
+.table-wrap tr:last-child td{border-bottom:none}
+.table-wrap tr:hover td{background:rgba(232,196,122,.03)}
+.badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(63,185,80,.15);color:var(--green)}
+.badge-red{background:rgba(248,81,73,.15);color:var(--red)}
+.badge-gold{background:rgba(232,196,122,.15);color:var(--gold)}
+.badge-blue{background:rgba(88,166,255,.15);color:var(--blue)}
+.badge-purple{background:rgba(188,140,255,.15);color:var(--purple)}
+.badge-gray{background:rgba(138,146,166,.15);color:var(--gray)}
+.actions-cell{display:flex;gap:6px}
+.actions-cell button{padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--border);background:transparent;color:var(--gray);cursor:pointer}
+.actions-cell button:hover{border-color:var(--gold);color:var(--gold)}
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input,.search-bar select{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--white);font-size:13px;outline:none}
+.search-bar input{flex:1}
+.search-bar select{min-width:120px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:520px;max-width:92vw;max-height:85vh;overflow-y:auto;position:relative}
+.modal h3{font-size:18px;margin-bottom:20px}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--gray);font-size:20px;cursor:pointer}
+.modal .fg{margin-bottom:14px}
+.modal .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--green);border-radius:10px;padding:14px 20px;z-index:2000;display:none;font-size:13px}
+.toast.show{display:block;animation:fadeIn .3s}
+.toast.error{border-color:var(--red)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:16px}
+.pagination button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--gray);font-size:12px}
+.pagination button.active{background:var(--gold);color:#0f1117;border-color:var(--gold)}
+.pagination button:hover{border-color:var(--gold)}
+.empty{text-align:center;padding:40px;color:var(--gray);font-size:14px}
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.chart-container h3{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--gray)}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:10px}
+.chart-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar .bar{width:100%;border-radius:4px 4px 0 0;transition:.3s;min-height:2px}
+.chart-bar .bar-label{font-size:10px;color:var(--gray)}
+.chart-bar .bar-value{font-size:10px;color:var(--gold);font-weight:600}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.export-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.setting-group{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.setting-group h3{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--gold)}
+.setting-row{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;margin-bottom:12px}
+.setting-row label{font-size:13px;color:var(--gray)}
+.setting-row input{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--white);font-size:13px;outline:none;max-width:300px}
+.setting-row input:focus{border-color:var(--gold)}
+.withdraw-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.withdraw-card .info{flex:1}
+.withdraw-card .info .name{font-weight:600;font-size:14px}
+.withdraw-card .info .detail{font-size:12px;color:var(--gray);margin-top:2px}
+.withdraw-card .amount{font-size:18px;font-weight:700;color:var(--red);margin:0 20px}
+.withdraw-card .actions{display:flex;gap:6px}
+</style>
+</head>
+<body>
+
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>InvistaTop <span style="color:var(--gold)">Admin</span></h1>
+    <p class="sub">Painel de gerenciamento</p>
+    <form id="loginForm">
+      <div class="fg"><label>Email</label><input type="email" id="loginEmail" required></div>
+      <div class="fg"><label>Senha</label><input type="password" id="loginPass" required></div>
+      <div class="error" id="loginError"></div>
+      <button type="submit" class="btn btn-gold">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<div class="layout" id="layout">
+  <aside class="sidebar">
+    <div class="logo">Invista<span>Top</span> Admin</div>
+    <nav>
+      <a href="#" data-page="dashboard" class="active"><span class="icon">📊</span> Dashboard</a>
+      <div class="section-label">Gestão</div>
+      <a href="#" data-page="users"><span class="icon">👥</span> Usuários</a>
+      <a href="#" data-page="properties"><span class="icon">🏢</span> Imóveis</a>
+      <a href="#" data-page="investments"><span class="icon">💰</span> Investimentos</a>
+      <a href="#" data-page="dividends"><span class="icon">📈</span> Dividendos</a>
+      <a href="#" data-page="transactions"><span class="icon">📋</span> Transações</a>
+      <div class="section-label">Financeiro</div>
+      <a href="#" data-page="withdrawals"><span class="icon">🏦</span> Saques <span id="pendingBadge" style="display:none;background:var(--red);color:#fff;border-radius:50px;padding:2px 7px;font-size:10px;margin-left:auto"></span></a>
+      <div class="section-label">Sistema</div>
+      <a href="#" data-page="settings"><span class="icon">⚙️</span> Configurações</a>
+    </nav>
+    <button class="logout" onclick="logout()">← Sair</button>
+  </aside>
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header"><h2>Dashboard</h2></div>
+      <div class="stats" id="dashStats"></div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="chart-container">
+          <h3>Receitas vs Saques (6 meses)</h3>
+          <div class="chart-bars" id="chartMonthly"></div>
+        </div>
+        <div class="chart-container">
+          <h3>Top Imóveis por Investimento</h3>
+          <div class="chart-bars" id="chartProperties"></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="table-wrap"><table><thead><tr><th>Últimos usuários</th></tr></thead><tbody id="dashUsers"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Últimos investimentos</th></tr></thead><tbody id="dashInvestments"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="page-header"><h2>Usuários</h2><div class="actions"><button class="btn btn-gold btn-sm" onclick="openUserModal()">+ Novo</button><button class="btn btn-outline btn-sm" onclick="exportCSV('users')">📥 Exportar CSV</button></div></div>
+      <div class="search-bar"><input id="userSearch" placeholder="Buscar por nome ou email..." oninput="loadUsers()"><select id="userStatus" onchange="loadUsers()"><option value="">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Saldo</th><th>Admin</th><th>Status</th><th>Cadastro</th><th>Ações</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+      <div class="pagination" id="usersPag"></div>
+    </div>
+
+    <!-- PROPERTIES -->
+    <div class="page" id="page-properties">
+      <div class="page-header"><h2>Imóveis</h2><div class="actions"><button class="btn btn-gold btn-sm" onclick="openPropModal()">+ Novo</button></div></div>
+      <div class="search-bar"><input id="propSearch" placeholder="Buscar por título ou local..." oninput="loadProps()"><select id="propType" onchange="loadProps()"><option value="">Todos</option><option value="residential">Residencial</option><option value="commercial">Comercial</option><option value="logistics">Logística</option><option value="premium">Alta renda</option></select><select id="propStatus" onchange="loadProps()"><option value="">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Título</th><th>Local</th><th>Tipo</th><th>Preço/token</th><th>Yield</th><th>Vendidos</th><th>Status</th><th>Ações</th></tr></thead><tbody id="propsBody"></tbody></table></div>
+      <div class="pagination" id="propsPag"></div>
+    </div>
+
+    <!-- INVESTMENTS -->
+    <div class="page" id="page-investments">
+      <div class="page-header"><h2>Investimentos</h2><div class="actions"><button class="btn btn-outline btn-sm" onclick="exportCSV('investments')">📥 Exportar CSV</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Imóvel</th><th>Tokens</th><th>Pago</th><th>Data</th></tr></thead><tbody id="invBody"></tbody></table></div>
+      <div class="pagination" id="invPag"></div>
+    </div>
+
+    <!-- DIVIDENDS -->
+    <div class="page" id="page-dividends">
+      <div class="page-header"><h2>Dividendos</h2><div class="actions"><button class="btn btn-green btn-sm" onclick="generateDividends()">Gerar dividendos do mês</button><button class="btn btn-outline btn-sm" onclick="exportCSV('dividends')">📥 Exportar CSV</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Imóvel</th><th>Valor</th><th>Mês</th><th>Pago</th><th>Data</th></tr></thead><tbody id="divBody"></tbody></table></div>
+      <div class="pagination" id="divPag"></div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="page" id="page-transactions">
+      <div class="page-header"><h2>Transações</h2><div class="actions"><button class="btn btn-outline btn-sm" onclick="exportCSV('transactions')">📥 Exportar CSV</button></div></div>
+      <div class="search-bar"><select id="txType" onchange="loadTx()"><option value="">Todos</option><option value="purchase">Compra</option><option value="deposit">Depósito</option><option value="withdrawal">Saque</option><option value="dividend">Dividendo</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Tipo</th><th>Valor</th><th>Descrição</th><th>Status</th><th>Data</th></tr></thead><tbody id="txBody"></tbody></table></div>
+      <div class="pagination" id="txPag"></div>
+    </div>
+
+    <!-- WITHDRAWALS -->
+    <div class="page" id="page-withdrawals">
+      <div class="page-header"><h2>Saques Pendentes</h2></div>
+      <div class="search-bar"><select id="withdrawStatus" onchange="loadWithdrawals()"><option value="">Todos</option><option value="pending" selected>Pendentes</option><option value="approved">Aprovados</option><option value="rejected">Rejeitados</option></select></div>
+      <div id="withdrawList"></div>
+      <div class="pagination" id="withdrawPag"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header"><h2>Configurações</h2></div>
+      <div class="setting-group">
+        <h3>Plataforma</h3>
+        <div class="setting-row"><label>Nome da plataforma</label><input id="sPlatformName" value="InvistaTop"></div>
+        <div class="setting-row"><label>Email de suporte</label><input id="sSupportEmail" value="suporte@invistatop.com"></div>
+      </div>
+      <div class="setting-group">
+        <h3>Financeiro</h3>
+        <div class="setting-row"><label>Depósito mínimo (R$)</label><input id="sMinDeposit" type="number" value="100"></div>
+        <div class="setting-row"><label>Depósito máximo (R$)</label><input id="sMaxDeposit" type="number" value="500000"></div>
+        <div class="setting-row"><label>Saque mínimo (R$)</label><input id="sMinWithdraw" type="number" value="50"></div>
+        <div class="setting-row"><label>Bônus cadastro (R$)</label><input id="sSignupBonus" type="number" value="10000"></div>
+        <div class="setting-row"><label>Taxa plataforma (%)</label><input id="sPlatformFee" type="number" step="0.1" value="2.5"></div>
+      </div>
+      <button class="btn btn-gold" style="width:auto" onclick="saveSettings()">Salvar configurações</button>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="userModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('userModal')">×</button>
+    <h3 id="userModalTitle">Novo Usuário</h3>
+    <input type="hidden" id="userId">
+    <div class="fg-row"><div class="fg"><label>Nome</label><input id="uName"></div><div class="fg"><label>Email</label><input id="uEmail" type="email"></div></div>
+    <div class="fg-row"><div class="fg"><label>Telefone</label><input id="uPhone"></div><div class="fg"><label>Senha</label><input id="uPass" type="password" placeholder="Deixe vazio para manter"></div></div>
+    <div class="fg-row"><div class="fg"><label>Saldo (R$)</label><input id="uBalance" type="number" value="0"></div><div class="fg"><label>Admin</label><select id="uAdmin"><option value="0">Não</option><option value="1">Sim</option></select></div></div>
+    <div class="fg"><label>Status</label><select id="uStatus"><option value="active">Ativo</option><option value="inactive">Inativo</option></select></div>
+    <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('userModal')">Cancelar</button><button class="btn btn-gold" style="width:auto" onclick="saveUser()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="propModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('propModal')">×</button>
+    <h3 id="propModalTitle">Novo Imóvel</h3>
+    <input type="hidden" id="propId">
+    <div class="fg"><label>Título</label><input id="pTitle"></div>
+    <div class="fg-row"><div class="fg"><label>Localização</label><input id="pLocation"></div><div class="fg"><label>Tipo</label><select id="pType"><option value="residential">Residencial</option><option value="commercial">Comercial</option><option value="logistics">Logística</option><option value="premium">Alta renda</option></select></div></div>
+    <div class="fg"><label>Descrição</label><textarea id="pDesc" rows="2" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--white);font-size:13px;resize:vertical"></textarea></div>
+    <div class="fg-row"><div class="fg"><label>Valor total (R$)</label><input id="pValue" type="number"></div><div class="fg"><label>Preço/token (R$)</label><input id="pPrice" type="number"></div></div>
+    <div class="fg-row"><div class="fg"><label>Total tokens</label><input id="pTokens" type="number"></div><div class="fg"><label>Tokens vendidos</label><input id="pSold" type="number" value="0"></div></div>
+    <div class="fg-row"><div class="fg"><label>Yield anual %</label><input id="pYield" type="number" step="0.1"></div><div class="fg"><label>Valorização %</label><input id="pAppr" type="number" step="0.1" value="0"></div></div>
+    <div class="fg-row"><div class="fg"><label>Prazo (meses)</label><input id="pTerm" type="number"></div><div class="fg"><label>Status</label><select id="pStatus"><option value="active">Ativo</option><option value="inactive">Inativo</option></select></div></div>
+    <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('propModal')">Cancelar</button><button class="btn btn-gold" style="width:auto" onclick="saveProp()">Salvar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/admin';
+let token = localStorage.getItem('adminToken');
+let currentUser = null;
+let currentPage = {};
+
+function fmt(n) { return 'R$ ' + Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 2 }); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
+function fmtShort(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return n.toFixed(0);
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API + path, { ...opts, headers: { ...headers, ...opts.headers } });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Erro');
+  return data;
+}
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+document.querySelectorAll('.sidebar nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + a.dataset.page).classList.add('active');
+    loadPage(a.dataset.page);
+  });
+});
+
+function loadPage(page) {
+  if (page === 'dashboard') loadDashboard();
+  else if (page === 'users') loadUsers();
+  else if (page === 'properties') loadProps();
+  else if (page === 'investments') loadInvestments();
+  else if (page === 'dividends') loadDividends();
+  else if (page === 'transactions') loadTx();
+  else if (page === 'withdrawals') loadWithdrawals();
+  else if (page === 'settings') loadSettings();
+}
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.getElementById('loginError').textContent = '';
+  try {
+    const data = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPass').value })
+    }).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    if (!data.user.is_admin) throw new Error('Acesso restrito a administradores');
+    token = data.token;
+    localStorage.setItem('adminToken', token);
+    currentUser = data.user;
+    showLayout();
+  } catch (e) { document.getElementById('loginError').textContent = e.message; }
+});
+
+function showLayout() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('layout').classList.add('show');
+  loadDashboard();
+  checkPendingWithdrawals();
+}
+
+function logout() {
+  token = null;
+  localStorage.removeItem('adminToken');
+  document.getElementById('loginPage').style.display = '';
+  document.getElementById('layout').classList.remove('show');
+}
+
+async function checkPendingWithdrawals() {
+  try {
+    const d = await api('/withdrawals?status=pending&limit=1');
+    const badge = document.getElementById('pendingBadge');
+    if (d.total > 0) { badge.style.display = 'inline'; badge.textContent = d.total; }
+    else badge.style.display = 'none';
+  } catch {}
+}
+
+// DASHBOARD
+async function loadDashboard() {
+  try {
+    const d = await api('/dashboard');
+    document.getElementById('dashStats').innerHTML = `
+      <div class="stat-card"><div class="icon-big">👥</div><div class="label">Usuários</div><div class="value">${d.total_users}</div><div class="sub">${d.active_users} ativos</div></div>
+      <div class="stat-card"><div class="icon-big">🏢</div><div class="label">Imóveis</div><div class="value">${d.total_properties}</div><div class="sub">${d.active_properties} ativos</div></div>
+      <div class="stat-card"><div class="icon-big">💰</div><div class="label">Total Investido</div><div class="value">${fmt(d.total_invested)}</div><div class="sub">${d.total_tokens_sold} tokens vendidos</div></div>
+      <div class="stat-card"><div class="icon-big">📈</div><div class="label">Dividendos Pagos</div><div class="value">${fmt(d.total_dividends)}</div><div class="sub">Saldo total usuários: ${fmt(d.total_balance)}</div></div>`;
+
+    document.getElementById('dashUsers').innerHTML = d.recent_users.map(u => `<tr><td><strong>${u.name}</strong><br><span style="color:var(--gray);font-size:12px">${u.email}</span></td></tr>`).join('');
+    document.getElementById('dashInvestments').innerHTML = d.recent_investments.length ? d.recent_investments.map(i => `<tr><td><strong>${i.user_name}</strong> investiu em<br><span style="color:var(--gray);font-size:12px">${i.property_title} — ${i.tokens} tokens</span></td></tr>`).join('') : '<tr><td class="empty">Nenhum investimento</td></tr>';
+
+    // Monthly chart
+    const months = {};
+    (d.monthly_data || []).forEach(m => {
+      if (!months[m.month]) months[m.month] = { deposits: 0, withdrawals: 0 };
+      if (m.type === 'deposit') months[m.month].deposits = m.total;
+      if (m.type === 'withdrawal') months[m.month].withdrawals = Math.abs(m.total);
+    });
+    const monthKeys = Object.keys(months).sort().slice(-6);
+    const maxMonth = Math.max(1, ...monthKeys.map(k => Math.max(months[k].deposits, months[k].withdrawals)));
+    document.getElementById('chartMonthly').innerHTML = monthKeys.length ? monthKeys.map(k => `
+      <div class="chart-bar">
+        <div class="bar-value">${fmtShort(months[k].deposits)}</div>
+        <div class="bar" style="height:${(months[k].deposits/maxMonth)*100}%;background:var(--green)"></div>
+        <div class="bar" style="height:${(months[k].withdrawals/maxMonth)*100}%;background:var(--red);margin-top:2px"></div>
+        <div class="bar-label">${k.slice(5)}/${k.slice(2,4)}</div>
+      </div>
+    `).join('') : '<div class="empty" style="height:100%;display:flex;align-items:center">Sem dados</div>';
+
+    // Property chart
+    const props = d.property_performance || [];
+    const maxProp = Math.max(1, ...props.map(p => p.total_invested));
+    document.getElementById('chartProperties').innerHTML = props.length ? props.map(p => `
+      <div class="chart-bar">
+        <div class="bar-value">${fmtShort(p.total_invested)}</div>
+        <div class="bar" style="height:${(p.total_invested/maxProp)*100}%;background:var(--gold)"></div>
+        <div class="bar-label" title="${p.title}">${p.title.length > 12 ? p.title.slice(0,12)+'...' : p.title}</div>
+      </div>
+    `).join('') : '<div class="empty" style="height:100%;display:flex;align-items:center">Sem dados</div>';
+  } catch (e) { toast(e.message, true); }
+}
+
+// USERS
+async function loadUsers(page = 1) {
+  try {
+    const search = document.getElementById('userSearch')?.value || '';
+    const status = document.getElementById('userStatus')?.value || '';
+    const d = await api(`/users?search=${search}&status=${status}&page=${page}&limit=10`);
+    document.getElementById('usersBody').innerHTML = d.users.map(u => `<tr>
+      <td><strong>${u.name}</strong></td><td>${u.email}</td><td>${u.phone || '-'}</td>
+      <td>${fmt(u.balance)}</td><td>${u.is_admin ? '<span class="badge badge-gold">Admin</span>' : '-'}</td>
+      <td><span class="badge ${u.status === 'active' ? 'badge-green' : 'badge-red'}">${u.status}</span></td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td class="actions-cell"><button onclick="editUser('${u.id}')">Editar</button><button onclick="deleteUser('${u.id}')">Desativar</button></td>
+    </tr>`).join('') || '<tr><td class="empty" colspan="8">Nenhum usuário</td></tr>';
+    renderPag('usersPag', d.pages, d.page, loadUsers);
+  } catch (e) { toast(e.message, true); }
+}
+
+function openUserModal(u) {
+  document.getElementById('userModalTitle').textContent = u ? 'Editar Usuário' : 'Novo Usuário';
+  document.getElementById('userId').value = u?.id || '';
+  document.getElementById('uName').value = u?.name || '';
+  document.getElementById('uEmail').value = u?.email || '';
+  document.getElementById('uPhone').value = u?.phone || '';
+  document.getElementById('uPass').value = '';
+  document.getElementById('uBalance').value = u?.balance ?? 0;
+  document.getElementById('uAdmin').value = u?.is_admin ?? 0;
+  document.getElementById('uStatus').value = u?.status || 'active';
+  openModal('userModal');
+}
+
+async function editUser(id) {
+  try { const u = await api(`/users/${id}`); openUserModal(u); } catch (e) { toast(e.message, true); }
+}
+
+async function saveUser() {
+  try {
+    const id = document.getElementById('userId').value;
+    const body = {
+      name: document.getElementById('uName').value,
+      email: document.getElementById('uEmail').value,
+      phone: document.getElementById('uPhone').value,
+      balance: +document.getElementById('uBalance').value,
+      is_admin: +document.getElementById('uAdmin').value,
+      status: document.getElementById('uStatus').value
+    };
+    const pass = document.getElementById('uPass').value;
+    if (pass) body.password = pass;
+    if (id) await api(`/users/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+    else {
+      if (!pass) throw new Error('Senha obrigatória para novo usuário');
+      await api('/users', { method: 'POST', body: JSON.stringify(body) });
+    }
+    closeModal('userModal');
+    toast('Salvo com sucesso');
+    loadUsers();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Desativar este usuário?')) return;
+  try { await api(`/users/${id}`, { method: 'DELETE' }); toast('Desativado'); loadUsers(); } catch (e) { toast(e.message, true); }
+}
+
+// PROPERTIES
+async function loadProps(page = 1) {
+  try {
+    const search = document.getElementById('propSearch')?.value || '';
+    const type = document.getElementById('propType')?.value || '';
+    const status = document.getElementById('propStatus')?.value || '';
+    const d = await api(`/properties?search=${search}&type=${type}&status=${status}&page=${page}&limit=10`);
+    const typeLabel = { residential: 'Residencial', commercial: 'Comercial', logistics: 'Logística', premium: 'Alta renda' };
+    document.getElementById('propsBody').innerHTML = d.properties.map(p => `<tr>
+      <td><strong>${p.title}</strong></td><td>${p.location}</td><td><span class="badge badge-blue">${typeLabel[p.type] || p.type}</span></td>
+      <td>${fmt(p.token_price)}</td><td>${p.yield_annual}%</td><td>${p.tokens_sold}/${p.total_tokens} (${p.progress_pct}%)</td>
+      <td><span class="badge ${p.status === 'active' ? 'badge-green' : 'badge-red'}">${p.status}</span></td>
+      <td class="actions-cell"><button onclick="editProp('${p.id}')">Editar</button><button onclick="deleteProp('${p.id}')">Desativar</button></td>
+    </tr>`).join('') || '<tr><td class="empty" colspan="8">Nenhum imóvel</td></tr>';
+    renderPag('propsPag', d.pages, d.page, loadProps);
+  } catch (e) { toast(e.message, true); }
+}
+
+function openPropModal(p) {
+  document.getElementById('propModalTitle').textContent = p ? 'Editar Imóvel' : 'Novo Imóvel';
+  document.getElementById('propId').value = p?.id || '';
+  document.getElementById('pTitle').value = p?.title || '';
+  document.getElementById('pLocation').value = p?.location || '';
+  document.getElementById('pType').value = p?.type || 'residential';
+  document.getElementById('pDesc').value = p?.description || '';
+  document.getElementById('pValue').value = p?.total_value || '';
+  document.getElementById('pPrice').value = p?.token_price || '';
+  document.getElementById('pTokens').value = p?.total_tokens || '';
+  document.getElementById('pSold').value = p?.tokens_sold || 0;
+  document.getElementById('pYield').value = p?.yield_annual || '';
+  document.getElementById('pAppr').value = p?.appreciation || 0;
+  document.getElementById('pTerm').value = p?.term_months || '';
+  document.getElementById('pStatus').value = p?.status || 'active';
+  openModal('propModal');
+}
+
+async function editProp(id) {
+  try { const p = await api(`/properties/${id}`); openPropModal(p); } catch (e) { toast(e.message, true); }
+}
+
+async function saveProp() {
+  try {
+    const id = document.getElementById('propId').value;
+    const body = {
+      title: document.getElementById('pTitle').value,
+      location: document.getElementById('pLocation').value,
+      type: document.getElementById('pType').value,
+      description: document.getElementById('pDesc').value,
+      total_value: +document.getElementById('pValue').value,
+      token_price: +document.getElementById('pPrice').value,
+      total_tokens: +document.getElementById('pTokens').value,
+      tokens_sold: +document.getElementById('pSold').value,
+      yield_annual: +document.getElementById('pYield').value,
+      appreciation: +document.getElementById('pAppr').value,
+      term_months: +document.getElementById('pTerm').value,
+      status: document.getElementById('pStatus').value
+    };
+    if (id) await api(`/properties/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+    else await api('/properties', { method: 'POST', body: JSON.stringify(body) });
+    closeModal('propModal');
+    toast('Salvo com sucesso');
+    loadProps();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function deleteProp(id) {
+  if (!confirm('Desativar este imóvel?')) return;
+  try { await api(`/properties/${id}`, { method: 'DELETE' }); toast('Desativado'); loadProps(); } catch (e) { toast(e.message, true); }
+}
+
+// INVESTMENTS
+async function loadInvestments(page = 1) {
+  try {
+    const d = await api(`/investments?page=${page}&limit=10`);
+    document.getElementById('invBody').innerHTML = d.investments.map(i => `<tr>
+      <td>${i.user_name}<br><span style="color:var(--gray);font-size:11px">${i.user_email}</span></td>
+      <td>${i.property_title}</td><td>${i.tokens}</td><td>${fmt(i.total_paid)}</td><td>${fmtDate(i.created_at)}</td>
+    </tr>`).join('') || '<tr><td class="empty" colspan="5">Nenhum investimento</td></tr>';
+    renderPag('invPag', d.pages, d.page, loadInvestments);
+  } catch (e) { toast(e.message, true); }
+}
+
+// DIVIDENDS
+async function loadDividends(page = 1) {
+  try {
+    const d = await api(`/dividends?page=${page}&limit=10`);
+    document.getElementById('divBody').innerHTML = d.dividends.map(i => `<tr>
+      <td>${i.user_name}</td><td>${i.property_title}</td><td>${fmt(i.amount)}</td><td>${i.month}</td>
+      <td><span class="badge ${i.paid ? 'badge-green' : 'badge-red'}">${i.paid ? 'Sim' : 'Não'}</span></td><td>${fmtDate(i.created_at)}</td>
+    </tr>`).join('') || '<tr><td class="empty" colspan="6">Nenhum dividendo</td></tr>';
+    renderPag('divPag', d.pages, d.page, loadDividends);
+  } catch (e) { toast(e.message, true); }
+}
+
+async function generateDividends() {
+  if (!confirm('Gerar dividendos do mês atual?')) return;
+  try { const r = await api('/dividends/generate', { method: 'POST', body: '{}' }); toast(r.message); loadDividends(); } catch (e) { toast(e.message, true); }
+}
+
+// TRANSACTIONS
+async function loadTx(page = 1) {
+  try {
+    const type = document.getElementById('txType')?.value || '';
+    const d = await api(`/transactions?type=${type}&page=${page}&limit=10`);
+    const typeLabel = { purchase: 'Compra', deposit: 'Depósito', withdrawal: 'Saque', dividend: 'Dividendo' };
+    const typeBadge = { purchase: 'badge-red', deposit: 'badge-green', withdrawal: 'badge-purple', dividend: 'badge-gold' };
+    const statusBadge = { completed: 'badge-green', pending: 'badge-gold', approved: 'badge-green', rejected: 'badge-red' };
+    const statusLabel = { completed: 'Concluído', pending: 'Pendente', approved: 'Aprovado', rejected: 'Rejeitado' };
+    document.getElementById('txBody').innerHTML = d.transactions.map(t => `<tr>
+      <td>${t.user_name}</td>
+      <td><span class="badge ${typeBadge[t.type] || ''}">${typeLabel[t.type] || t.type}</span></td>
+      <td style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--red)'}">${t.amount >= 0 ? '+' : ''}${fmt(t.amount)}</td>
+      <td>${t.description}</td>
+      <td>${t.status ? `<span class="badge ${statusBadge[t.status] || 'badge-gray'}">${statusLabel[t.status] || t.status}</span>` : '-'}</td>
+      <td>${fmtDate(t.created_at)}</td>
+    </tr>`).join('') || '<tr><td class="empty" colspan="6">Nenhuma transação</td></tr>';
+    renderPag('txPag', d.pages, d.page, loadTx);
+  } catch (e) { toast(e.message, true); }
+}
+
+// WITHDRAWALS
+async function loadWithdrawals(page = 1) {
+  try {
+    const status = document.getElementById('withdrawStatus')?.value || '';
+    const d = await api(`/withdrawals?status=${status}&page=${page}&limit=10`);
+    const statusBadge = { pending: 'badge-gold', approved: 'badge-green', rejected: 'badge-red' };
+    const statusLabel = { pending: 'Pendente', approved: 'Aprovado', rejected: 'Rejeitado' };
+    document.getElementById('withdrawList').innerHTML = d.withdrawals.length ? d.withdrawals.map(w => `
+      <div class="withdraw-card">
+        <div class="info">
+          <div class="name">${w.user_name}</div>
+          <div class="detail">${w.user_email} · ${fmtDate(w.created_at)}</div>
+          <div class="detail">${w.description}</div>
+        </div>
+        <div class="amount">${fmt(Math.abs(w.amount))}</div>
+        <span class="badge ${statusBadge[w.status] || 'badge-gray'}" style="margin-right:12px">${statusLabel[w.status] || w.status}</span>
+        ${w.status === 'pending' ? `
+          <div class="actions">
+            <button class="btn btn-green btn-sm" onclick="approveWithdrawal('${w.id}')">Aprovar</button>
+            <button class="btn btn-red btn-sm" onclick="rejectWithdrawal('${w.id}')">Rejeitar</button>
+          </div>
+        ` : ''}
+      </div>
+    `).join('') : '<div class="empty">Nenhum saque encontrado</div>';
+    renderPag('withdrawPag', d.pages, d.page, loadWithdrawals);
+    checkPendingWithdrawals();
+  } catch (e) { toast(e.message, true); }
+}
+
+async function approveWithdrawal(id) {
+  if (!confirm('Aprovar este saque?')) return;
+  try { await api(`/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'approved' }) }); toast('Saque aprovado'); loadWithdrawals(); } catch (e) { toast(e.message, true); }
+}
+
+async function rejectWithdrawal(id) {
+  if (!confirm('Rejeitar este saque? O valor será devolvido ao saldo do usuário.')) return;
+  try { await api(`/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'rejected' }) }); toast('Saque rejeitado'); loadWithdrawals(); } catch (e) { toast(e.message, true); }
+}
+
+// SETTINGS
+async function loadSettings() {
+  try {
+    const s = await api('/settings');
+    document.getElementById('sPlatformName').value = s.platform_name || 'InvistaTop';
+    document.getElementById('sSupportEmail').value = s.support_email || 'suporte@invistatop.com';
+    document.getElementById('sMinDeposit').value = s.min_deposit || 100;
+    document.getElementById('sMaxDeposit').value = s.max_deposit || 500000;
+    document.getElementById('sMinWithdraw').value = s.min_withdraw || 50;
+    document.getElementById('sSignupBonus').value = s.signup_bonus || 10000;
+    document.getElementById('sPlatformFee').value = s.platform_fee || 2.5;
+  } catch (e) { toast(e.message, true); }
+}
+
+async function saveSettings() {
+  try {
+    const settings = {
+      platform_name: document.getElementById('sPlatformName').value,
+      support_email: document.getElementById('sSupportEmail').value,
+      min_deposit: document.getElementById('sMinDeposit').value,
+      max_deposit: document.getElementById('sMaxDeposit').value,
+      min_withdraw: document.getElementById('sMinWithdraw').value,
+      signup_bonus: document.getElementById('sSignupBonus').value,
+      platform_fee: document.getElementById('sPlatformFee').value
+    };
+    await api('/settings', { method: 'PUT', body: JSON.stringify(settings) });
+    toast('Configurações salvas');
+  } catch (e) { toast(e.message, true); }
+}
+
+// EXPORT
+function exportCSV(type) {
+  window.open(`${API}/export/${type}?token=${token}`, '_blank');
+}
+
+// PAGINATION
+function renderPag(id, pages, current, fn) {
+  if (pages <= 1) { document.getElementById(id).innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= pages; i++) {
+    html += `<button class="${i === current ? 'active' : ''}" onclick="(${fn.name})(${i})">${i}</button>`;
+  }
+  document.getElementById(id).innerHTML = html;
+}
+
+// INIT
+if (token) {
+  fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(r => r.json()).then(d => {
+      if (d.is_admin) { currentUser = d; showLayout(); }
+      else logout();
+    }).catch(() => logout());
+}
+</script>
+</body>
+</html>

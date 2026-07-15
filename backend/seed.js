@@ -27,8 +27,8 @@ async function seed() {
   if (!users || users.count === 0) {
     const id = uuid();
     const hash = bcrypt.hashSync('123456', 10);
-    run('INSERT INTO users (id, name, email, password, balance) VALUES (?, ?, ?, ?, ?)', [id, 'Investidor Teste', 'teste@invistatop.com', hash, 50000]);
-    console.log('Usuário de teste criado: teste@invistatop.com / 123456');
+    run('INSERT INTO users (id, name, email, password, balance, is_admin) VALUES (?, ?, ?, ?, ?, ?)', [id, 'Investidor Teste', 'teste@invistatop.com', hash, 50000, 1]);
+    console.log('Usuário admin criado: teste@invistatop.com / 123456');
   }
 }
 

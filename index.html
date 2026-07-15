@@ -282,6 +282,7 @@ footer{background:var(--navy-800);padding:70px 0 30px;border-top:1px solid rgba(
             <div style="font-size:12px;color:var(--gray-400)" id="dropdownEmail">-</div>
           </div>
           <button onclick="openDashboard()">Meu Painel</button>
+          <button onclick="openProfileModal()">Meu Perfil</button>
           <button onclick="openDepositModal()">Depositar</button>
           <button onclick="openWithdrawModal()">Sacar</button>
           <button onclick="logout()" style="color:var(--red)">Sair</button>
@@ -558,8 +559,40 @@ footer{background:var(--navy-800);padding:70px 0 30px;border-top:1px solid rgba(
     <form id="withdrawForm">
       <div class="form-group"><label>Valor (R$)</label><input type="number" id="withdrawAmount" min="1" step="0.01" value="100" required></div>
       <div style="font-size:13px;color:var(--gray-400);margin-bottom:12px">Saldo disponível: <span style="color:var(--gold-400);font-weight:700" id="withdrawBalance">R$ 0</span></div>
-      <button type="submit" class="btn btn-red" style="width:100%;justify-content:center">Sacar</button>
+      <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px">⚠ Saques aguardam aprovação do administrador</div>
+      <button type="submit" class="btn btn-red" style="width:100%;justify-content:center">Solicitar saque</button>
     </form>
+  </div>
+</div>
+
+<!-- PROPERTY DETAIL MODAL -->
+<div class="modal-overlay" id="propDetailModal">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="closeModal('propDetailModal')">×</button>
+    <div id="propDetailContent"></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('profileModal')">×</button>
+    <h2>Meu Perfil</h2>
+    <p class="subtitle">Gerencie seus dados pessoais</p>
+    <form id="profileForm">
+      <div class="form-group"><label>Nome</label><input type="text" id="profileName" required></div>
+      <div class="form-group"><label>Email</label><input type="email" id="profileEmail" disabled style="opacity:.6"></div>
+      <div class="form-group"><label>Telefone</label><input type="tel" id="profilePhone" placeholder="(11) 99999-9999"></div>
+      <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;margin-top:8px">Salvar perfil</button>
+    </form>
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)">
+      <h3 style="font-size:16px;margin-bottom:14px">Alterar senha</h3>
+      <form id="passForm">
+        <div class="form-group"><label>Senha atual</label><input type="password" id="passCurrent" required></div>
+        <div class="form-group"><label>Nova senha</label><input type="password" id="passNew" required minlength="6"></div>
+        <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center">Alterar senha</button>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -579,6 +612,7 @@ footer{background:var(--navy-800);padding:70px 0 30px;border-top:1px solid rgba(
   </div>
   <div class="dash-section"><h4>Meus Investimentos</h4><div id="dashInvestments"><p style="color:var(--gray-500);font-size:14px">Nenhum investimento ainda</p></div></div>
   <div class="dash-section"><h4>Últimas Transações</h4><div id="dashTransactions"><p style="color:var(--gray-500);font-size:14px">Nenhuma transação</p></div></div>
+  <div class="dash-section"><h4>Dividendos Recebidos</h4><div id="dashDividends"><p style="color:var(--gray-500);font-size:14px">Nenhum dividendo ainda</p></div></div>
 </div>
 
 <!-- TOAST -->
@@ -727,7 +761,7 @@ function renderProperties() {
         <div class="card-progress-text"><span>${p.tokens_sold} vendidos</span><span>${p.tokens_available} disponíveis</span></div>
         <div class="card-foot" style="margin-top:14px">
           <div class="card-price">${fmt(p.token_price)}<small>por token</small></div>
-          <span class="card-cta" onclick="openBuyModal('${p.id}')">Investir →</span>
+          <span class="card-cta" onclick="openPropDetail('${p.id}')">Ver detalhes →</span>
         </div>
       </div>
     </div>`;
@@ -844,7 +878,7 @@ function openWithdrawModal() {
 async function loadDashboard() {
   if (!token) return;
   try {
-    const [me, invData, txData] = await Promise.all([api('/auth/me'), api('/investments'), api('/transactions')]);
+    const [me, invData, txData, divData] = await Promise.all([api('/auth/me'), api('/investments'), api('/transactions'), api('/dividends').catch(() => ({dividends:[],summary:{total_received:0}}))]);
     setLogged(me);
     document.getElementById('dashInvested').textContent = fmt(invData.summary.total_invested);
     document.getElementById('dashPortfolio').textContent = fmt(invData.summary.current_value);
@@ -859,9 +893,16 @@ async function loadDashboard() {
 
     const txEl = document.getElementById('dashTransactions');
     if (txData.transactions.length) {
-      txEl.innerHTML = txData.transactions.slice(0, 8).map(t => `<div class="dash-item"><div class="dash-item-info"><div class="dash-item-title">${t.description}</div><div class="dash-item-sub">${new Date(t.created_at).toLocaleDateString('pt-BR')}</div></div><div class="dash-item-val"><div class="amount" style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--red)'}">${t.amount >= 0 ? '+' : ''}${fmt(t.amount)}</div></div></div>`).join('');
+      txEl.innerHTML = txData.transactions.slice(0, 8).map(t => `<div class="dash-item"><div class="dash-item-info"><div class="dash-item-title">${t.description}</div><div class="dash-item-sub">${new Date(t.created_at).toLocaleDateString('pt-BR')}${t.status === 'pending' ? ' · <span style="color:var(--gold-400)">Pendente</span>' : ''}</div></div><div class="dash-item-val"><div class="amount" style="color:${t.amount >= 0 ? 'var(--green)' : 'var(--red)'}">${t.amount >= 0 ? '+' : ''}${fmt(t.amount)}</div></div></div>`).join('');
     } else {
       txEl.innerHTML = '<p style="color:var(--gray-500);font-size:14px">Nenhuma transação</p>';
+    }
+
+    const divEl = document.getElementById('dashDividends');
+    if (divData.dividends && divData.dividends.length) {
+      divEl.innerHTML = divData.dividends.slice(0, 6).map(d => `<div class="dash-item"><div class="dash-item-info"><div class="dash-item-title">${d.title || 'Dividendo'}</div><div class="dash-item-sub">${d.month} · ${d.location || ''}</div></div><div class="dash-item-val"><div class="amount" style="color:var(--green)">+${fmt(d.amount)}</div></div></div>`).join('');
+    } else {
+      divEl.innerHTML = '<p style="color:var(--gray-500);font-size:14px">Nenhum dividendo ainda</p>';
     }
   } catch {}
 }
@@ -913,6 +954,109 @@ function calc() {
 }
 [amount, yld, years].forEach(el => el.addEventListener('input', calc));
 calc();
+
+// PROPERTY DETAIL
+async function openPropDetail(propId) {
+  try {
+    const p = await api('/properties/' + propId);
+    const colors = { residential: '#3a4f7a,#1f2d4d', commercial: '#4d3a6e,#2a1f3d', logistics: '#2e6e4d,#1a3d2a', premium: '#6e4d3a,#3d2a1f' };
+    const typeLabel = { residential: 'Residencial', commercial: 'Comercial', logistics: 'Logística', premium: 'Alta renda' };
+    const c = colors[p.type] || '#2a3d6b,#1a2747';
+    const monthlyDiv = p.investors_count > 0 ? (p.tokens_sold * p.token_price * p.yield_annual / 12 / 100) : 0;
+    document.getElementById('propDetailContent').innerHTML = `
+      <div style="height:180px;border-radius:14px;background:linear-gradient(135deg,${c});margin-bottom:20px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:48px;opacity:.3">🏢</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <span class="tag" style="margin-bottom:0">${typeLabel[p.type] || p.type}</span>
+        <span style="padding:6px 14px;border-radius:50px;background:rgba(63,185,80,.12);color:var(--green);font-size:12px;font-weight:600">${p.status === 'active' ? 'Ativo' : 'Inativo'}</span>
+      </div>
+      <h2 style="font-size:22px;margin-bottom:6px">${p.title}</h2>
+      <p style="color:var(--gray-400);font-size:14px;margin-bottom:20px">📍 ${p.location}</p>
+      <p style="color:var(--gray-300);font-size:14px;margin-bottom:20px;line-height:1.7">${p.description || 'Sem descrição disponível.'}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Valor do imóvel</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px">${fmt(p.total_value)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Preço por token</div>
+          <div style="font-size:18px;font-weight:700;color:var(--gold-400);margin-top:4px">${fmt(p.token_price)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Yield anual</div>
+          <div style="font-size:18px;font-weight:700;color:var(--green);margin-top:4px">${fmtPct(p.yield_annual)}</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Valorização</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px">${p.appreciation}%</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Prazo</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px">${p.term_months} meses</div>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--gray-500);text-transform:uppercase">Investidores</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px">${p.investors_count}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span style="color:var(--gray-400)">${p.tokens_sold} tokens vendidos</span>
+          <span style="color:var(--gray-400)">${p.tokens_available} disponíveis</span>
+        </div>
+        <div class="hc-prog"><div class="hc-prog-fill" style="width:${p.progress_pct}%"></div></div>
+        <div style="text-align:center;font-size:12px;color:var(--gray-500);margin-top:6px">${p.progress_pct}% financiado</div>
+      </div>
+      <button class="btn btn-gold" style="width:100%;justify-content:center" onclick="closeModal('propDetailModal');openBuyModal('${p.id}')">Investir neste imóvel →</button>
+    `;
+    openModal('propDetailModal');
+  } catch (e) { showToast(e.message, 'error'); }
+}
+
+// PROFILE
+function openProfileModal() {
+  if (currentUser) {
+    document.getElementById('profileName').value = currentUser.name || '';
+    document.getElementById('profileEmail').value = currentUser.email || '';
+    document.getElementById('profilePhone').value = currentUser.phone || '';
+  }
+  openModal('profileModal');
+}
+
+document.getElementById('profileForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    const data = await api('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: document.getElementById('profileName').value,
+        phone: document.getElementById('profilePhone').value
+      })
+    });
+    currentUser.name = data.name;
+    currentUser.phone = data.phone;
+    document.getElementById('dropdownName').textContent = data.name;
+    document.getElementById('userAvatar').textContent = data.name.charAt(0).toUpperCase();
+    showToast('Perfil atualizado');
+  } catch (e) { showToast(e.message, 'error'); }
+});
+
+document.getElementById('passForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await api('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({
+        current_password: document.getElementById('passCurrent').value,
+        new_password: document.getElementById('passNew').value
+      })
+    });
+    document.getElementById('passCurrent').value = '';
+    document.getElementById('passNew').value = '';
+    showToast('Senha alterada com sucesso');
+  } catch (e) { showToast(e.message, 'error'); }
+});
 
 // INIT
 loadUser();

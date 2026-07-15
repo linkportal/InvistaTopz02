@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuid } = require('uuid');
 const { query, getOne, run, runTransaction } = require('../database');
-const { auth } = require('../middleware/auth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -31,7 +31,7 @@ router.get('/', auth, (req, res) => {
   }
 });
 
-router.post('/generate', auth, (req, res) => {
+router.post('/generate', adminAuth, (req, res) => {
   try {
     const investments = query(`
       SELECT i.user_id, i.property_id, i.tokens, p.token_price, p.yield_annual

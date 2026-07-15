@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuid } = require('uuid');
 const { query, getOne, run } = require('../database');
-const { auth } = require('../middleware/auth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,7 +55,7 @@ router.get('/:id', (req, res) => {
   }
 });
 
-router.post('/', auth, (req, res) => {
+router.post('/', adminAuth, (req, res) => {
   try {
     const { title, location, type, description, image_url, total_value, token_price, total_tokens, yield_annual, appreciation, term_months } = req.body;
     if (!title || !location || !type || !total_value || !token_price || !total_tokens || !yield_annual || !term_months) {
@@ -71,7 +71,7 @@ router.post('/', auth, (req, res) => {
   }
 });
 
-router.put('/:id', auth, (req, res) => {
+router.put('/:id', adminAuth, (req, res) => {
   try {
     const existing = getOne('SELECT * FROM properties WHERE id = ?', [req.params.id]);
     if (!existing) return res.status(404).json({ error: 'Imóvel não encontrado' });

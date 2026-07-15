@@ -51,9 +51,9 @@ router.post('/withdraw', auth, (req, res) => {
     }
     const txId = uuid();
     run('UPDATE users SET balance = balance - ? WHERE id = ?', [amount, req.userId]);
-    run('INSERT INTO transactions (id, user_id, type, amount, description) VALUES (?, ?, ?, ?, ?)', [txId, req.userId, 'withdrawal', -amount, `Saque de R$ ${amount.toFixed(2)}`]);
+    run("INSERT INTO transactions (id, user_id, type, amount, description, status) VALUES (?, ?, ?, ?, ?, 'pending')", [txId, req.userId, 'withdrawal', -amount, `Saque de R$ ${amount.toFixed(2)}`]);
     const updated = getOne('SELECT balance FROM users WHERE id = ?', [req.userId]);
-    res.json({ success: true, balance: updated.balance, message: `R$ ${amount.toFixed(2)} sacados com sucesso` });
+    res.json({ success: true, balance: updated.balance, message: `Saque de R$ ${amount.toFixed(2)} solicitado. Aguardando aprovação.` });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
