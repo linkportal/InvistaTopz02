@@ -957,6 +957,12 @@ document.getElementById('mobileToggle').addEventListener('click', () => {
   links.style.display = links.style.display === 'flex' ? '' : 'flex';
   links.style.cssText = 'display:flex;position:absolute;top:60px;right:20px;flex-direction:column;background:var(--navy-800);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,.1);list-style:none;gap:16px';
 });
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', () => {
+    const links = document.querySelector('.nav-links');
+    if (window.innerWidth <= 980) links.style.display = '';
+  });
+});
 
 // REVEAL
 const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
